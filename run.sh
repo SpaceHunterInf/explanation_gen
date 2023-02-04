@@ -12,7 +12,7 @@
 #! Name of the job:
 #SBATCH -J neo_exp_gen
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
-#SBATCH -A A100
+#SBATCH -A VLACHOS-SL3-GPU
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
 #! How many (MPI) tasks will there be in total?
