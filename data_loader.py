@@ -62,9 +62,9 @@ def prepare_data(args, tokenizer):
     with open(path_test, 'r', encoding='utf-8') as f:
         test = json.load(f)
 
-    train_dataset = ExpDataset(args, train[:100], tokenizer)
-    dev_dataset = ExpDataset(args, dev[:100], tokenizer)
-    test_dataset = ExpDataset(args, test[:100], tokenizer)
+    train_dataset = ExpDataset(args, train, tokenizer)
+    dev_dataset = ExpDataset(args, dev, tokenizer)
+    test_dataset = ExpDataset(args, test, tokenizer)
 
     # if "gpt" in args['model_name']:
     #     train_loader = DataLoader(train_dataset, batch_size=args["train_batch_size"], shuffle=True, collate_fn=partial(gpt_collate_fn, tokenizer=tokenizer), num_workers=16)
