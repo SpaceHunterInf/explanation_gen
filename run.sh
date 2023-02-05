@@ -57,6 +57,7 @@ module purge                               # Removes all modules still loaded
 module load rhel8/default-amp              # REQUIRED - loads the basic environment
 
 #! Insert additional module load commands after this line if needed:
+eval "$(conda shell.bash hook)"
 conda activate exp_gen
 #! Full path to application executable:
 application="python exp_train --train_batch_size 16 --n_epochs 5 --GPU 2"
