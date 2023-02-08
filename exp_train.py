@@ -114,7 +114,7 @@ def train(args, *more):
                     deterministic=True,
                     num_nodes=1,
                     #precision=16,
-                    accelerator="ddp"
+                    accelerator="cuda"
                     )
 
     trainer.fit(task, train_loader, val_loader)
