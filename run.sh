@@ -60,7 +60,7 @@ module load rhel8/default-amp              # REQUIRED - loads the basic environm
 eval "$(conda shell.bash hook)"
 conda activate exp_gen
 #! Full path to application executable:
-application="python exp_train.py --train_batch_size 16 --n_epochs 10 --GPU 2"
+application="python exp_train.py --train_batch_size 16 --n_epochs 10 --GPU 2 --label contradiction"
 
 #! Run options for the application:
 options=""
