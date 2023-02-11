@@ -27,6 +27,9 @@ class ExpDataset(Dataset):
             x['output_text'] = 'Explanation: ' + self.data[index]['explanation']
             x['premise'] = self.data[index]['premise']
             x['hypothesis'] = self.data[index]['hypothesis']
+            if self.args['auto_eval'] == True:
+                x['highlighted_premise'] = self.data[index]['highlighted_premise']
+                x['highlighted_hypothesis'] = self.data[index]['highlighted_hypothesis']
 
         return x
 

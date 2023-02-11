@@ -8,7 +8,7 @@ import json
 from tqdm import tqdm
 from config import *
 from data_loader import *
-import random, os, json
+import random, os, json, re
 
 class exp_task(pl.LightningModule):
     
@@ -132,6 +132,12 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
         os.makedirs(save_path)
     
     save = []
+    auto_eval = args['auto_eval']
+    total = 0
+    total_matched = 0
+    total_token = 0
+    micro_recall = 0
+
     model.to('cuda')
     for batch in tqdm(test_loader):
         with torch.no_grad():
@@ -150,10 +156,41 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
                     tmp_save['explanation'] = outputs_text[idx]
                     tmp_save['input_text'] = batch['input_text'][idx]
                     save.append(tmp_save)
+
+                if auto_eval == True:
+                    highlighted_tokens = find_highlighted(batch['highlighted_premise'][idx] + batch['highlighted_hypothesis'][idx])
+                    matched_token, token_num = get_recall(highlighted_tokens, tmp_save['explanation'].lower())
+                    total +=1
+                    total_matched += matched_token
+                    total_token += token_num
+                    micro_recall += matched_token/token_num
     
     with open(os.path.join(save_path,'results_{}.json'.format(args['label'])), 'w') as f:
         f.write(json.dumps(save, indent=2))
         f.close()
+
+    if auto_eval == True:
+        with open(os.path.join(save_path,'auto_eval_results_{}.txt'.format(args['label'])), 'w') as f:
+            f.write('Total matched:{}, total token:{} in {} instances. \n'.format(str(total_matched), str(total_token), str(total)))
+            f.write('Macro Recall:{}, Micro Recall:{}. \n'.format(str(total_matched/total_token), str(micro_recall/total)))
+            f.close()
+
+def find_highlighted(t):
+    puncts = '!@#$%^&*()_+-=`~[]\{\};:",./<>?\''
+    highlighted = re.findall(r'\*(.*?)\*',t)
+    lowered = set()
+    for token in highlighted:
+        for i in range(len(puncts)):
+            token = token.replace(puncts[i], "")
+        lowered.add(token.lower())
+    return lowered
+
+def get_recall(tokens, exp):
+    matched = 0
+    for t in tokens:
+        if t in exp:
+            matched += 1
+    return matched, len(tokens)
 
 if __name__ == '__main__':
     args = get_args()
