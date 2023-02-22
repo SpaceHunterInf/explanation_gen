@@ -22,6 +22,7 @@ def get_args():
     parser.add_argument("--max_len", type=int, default=512)
     parser.add_argument("--mode", type=str, default="train")
     parser.add_argument("--label", type=str, default='entailment')
+    parser.add_argument("--auto_eval", type=bool, default=True)
 
     args = parser.parse_args()
     return args
