@@ -167,9 +167,9 @@ if __name__ == '__main__':
 
     labels = ['entailment', 'contradiction', 'neutral']
     label2index = {'entailment':0, 'neutral':1, 'contradiction':2}
-    fact = 'entailment'
+    fact = 'neutral'
     contrastive_highlighted = []
-    with open('save/t5-smallt5-small0.0001_epoch_5_seed_557_entailment/results/results_entailment.json', 'r', encoding='utf-8') as f:
+    with open('save/t5-smallt5-small0.0001_epoch_5_seed_557_{}/results/results_{}.json'.format(fact, fact), 'r', encoding='utf-8') as f:
         predicted_data = json.load(f)
 
     for predicted in tqdm(predicted_data, desc='data processing'):
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         #     "1": "neutral",
         #     "2": "contradiction"
         # },
-        #print(outputs[0])
+        #print(outputs[0].shape)
         predicted_probability = torch.softmax(outputs[0], dim=1)[0].tolist()  # batch_size only one
 
         last_hidden = outputs[1][-1][:,0,:].cpu() # taking only the [CLS] token
@@ -250,7 +250,7 @@ if __name__ == '__main__':
         contrastive['contrastive_highlight'] = ' '.join(['*'+x+'*' for x in highlighted_tokens])
         contrastive_highlighted.append(contrastive)
     
-    with open('contrastive_augmented_{}_{}.json'.format('snli', 'fact'), 'w', encoding='utf-8') as f:
+    with open('contrastive_augmented_{}_{}.json'.format('snli', fact), 'w', encoding='utf-8') as f:
         f.write(json.dumps(contrastive_highlighted, indent=2))
         f.close()
 

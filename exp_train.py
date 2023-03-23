@@ -117,7 +117,7 @@ def train(args, *more):
                     accelerator="cuda"
                     )
 
-    trainer.fit(task, train_loader, val_loader)
+    #trainer.fit(task, train_loader, val_loader)
 
     task.model.save_pretrained(save_path)
     task.tokenizer.save_pretrained(save_path)
