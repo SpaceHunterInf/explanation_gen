@@ -32,7 +32,8 @@ class exp_task(pl.LightningModule):
         elif 't5' in self.args['model_name']:
             loss = self.model(input_ids=batch["input_ids"],
                             attention_mask=batch["attention_mask"],
-                            labels=batch["label_ids"]
+                            labels=batch["label_ids"],
+                            max_new_tokens=1024
                             ).loss
         self.log('train_loss', loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
@@ -74,7 +75,7 @@ class exp_task(pl.LightningModule):
 
 def train(args, *more):
     args = vars(args)
-    args["model_name"] = args["model_checkpoint"]+args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
+    args["model_name"] = 'ibm'+args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
     # train!
     seed_everything(args["seed"])
 
@@ -114,7 +115,7 @@ def train(args, *more):
                     deterministic=True,
                     num_nodes=1,
                     #precision=16,
-                    accelerator="cuda"
+                    accelerator="ddp"
                     )
 
     #trainer.fit(task, train_loader, val_loader)
@@ -147,7 +148,7 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
                 outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
                                 attention_mask=batch["attention_mask"].to(device='cuda'),
                                 eos_token_id=tokenizer.eos_token_id,
-                                max_length=20,
+                                max_new_tokens=1024
                                 )
                 outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
