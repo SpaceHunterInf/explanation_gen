@@ -25,7 +25,7 @@ def generate_output(args, tokenizer, model, test_loader, save_path, label):
                 outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
                                 attention_mask=batch["attention_mask"].to(device='cuda'),
                                 eos_token_id=tokenizer.eos_token_id,
-                                max_length=50,
+                                max_length=128,
                                 )
                 outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
@@ -42,14 +42,14 @@ if __name__ == '__main__':
     labels = ['entailment', 'contradiction', 'neutral']
 
     for l in labels:
-        model_path = 'save/t5-smallt5-small0.0001_epoch_5_seed_557_{}'.format(l)
+        model_path = 'flan-t5/{}'.format(l)
         if "t5" in args["model_name"]:
             model = T5ForConditionalGeneration.from_pretrained(model_path)
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
 
         dataset = prepare_data(args, 'data/chaosNLI/chaosNLI_snli.json', tokenizer, l)
-        save_path = 'data/chaosNLI/SNLI'
+        save_path = 'flan-t5/'
         print("test start...")
         #evaluate model
         generate_output(args, tokenizer, model, dataset, save_path, l)

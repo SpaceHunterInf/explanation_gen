@@ -32,9 +32,7 @@ class exp_task(pl.LightningModule):
         elif 't5' in self.args['model_name']:
             loss = self.model(input_ids=batch["input_ids"],
                             attention_mask=batch["attention_mask"],
-                            labels=batch["label_ids"],
-                            max_new_tokens=1024
-                            ).loss
+                            labels=batch["label_ids"]).loss
         self.log('train_loss', loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
         # return result
@@ -54,8 +52,7 @@ class exp_task(pl.LightningModule):
         elif 't5' in self.args['model_name']:
             loss = self.model(input_ids=batch["input_ids"],
                             attention_mask=batch["attention_mask"],
-                            labels=batch["label_ids"]
-                            ).loss
+                            labels=batch["label_ids"]).loss
         #print(loss)
         self.log('val_loss', loss)
         return {'val_loss': loss, 'log': {'val_loss': loss}}
@@ -118,7 +115,7 @@ def train(args, *more):
                     accelerator="ddp"
                     )
 
-    #trainer.fit(task, train_loader, val_loader)
+    trainer.fit(task, train_loader, val_loader)
 
     task.model.save_pretrained(save_path)
     task.tokenizer.save_pretrained(save_path)
@@ -148,7 +145,7 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
                 outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
                                 attention_mask=batch["attention_mask"].to(device='cuda'),
                                 eos_token_id=tokenizer.eos_token_id,
-                                max_new_tokens=1024
+                                max_length=128
                                 )
                 outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
