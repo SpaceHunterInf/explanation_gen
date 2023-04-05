@@ -147,29 +147,35 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
     model.to('cuda')
     for batch in tqdm(test_loader):
         with torch.no_grad():
-            if 't5' or 'bloom' in args['model_name']:
+            model.cuda()
+            if 't5' in args['model_name']:
                 #print(batch)
-                model.cuda()
                 outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
                                 attention_mask=batch["attention_mask"].to(device='cuda'),
                                 eos_token_id=tokenizer.eos_token_id,
                                 max_length=128
                                 )
-                outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            elif 'bloom' in args['model_name']:
+                outputs = model.generate(**batch.to(device='cuda'),
+                                eos_token_id=tokenizer.eos_token_id,
+                                max_length=128
+                                )
+            
+            outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
-                for idx in range(len(outputs_text)):
-                    tmp_save = {'premise': batch['premise'][idx], 'hypothesis': batch['hypothesis'][idx], 'gold_explanation':batch['output_text'][idx]}
-                    tmp_save['explanation'] = outputs_text[idx]
-                    tmp_save['input_text'] = batch['input_text'][idx]
-                    save.append(tmp_save)
+            for idx in range(len(outputs_text)):
+                tmp_save = {'premise': batch['premise'][idx], 'hypothesis': batch['hypothesis'][idx], 'gold_explanation':batch['output_text'][idx]}
+                tmp_save['explanation'] = outputs_text[idx]
+                tmp_save['input_text'] = batch['input_text'][idx]
+                save.append(tmp_save)
 
-                if auto_eval == True:
-                    highlighted_tokens = find_highlighted(batch['highlighted_premise'][idx] + batch['highlighted_hypothesis'][idx])
-                    matched_token, token_num = get_recall(highlighted_tokens, tmp_save['explanation'].lower())
-                    total +=1
-                    total_matched += matched_token
-                    total_token += token_num
-                    micro_recall += matched_token/token_num
+            if auto_eval == True:
+                highlighted_tokens = find_highlighted(batch['highlighted_premise'][idx] + batch['highlighted_hypothesis'][idx])
+                matched_token, token_num = get_recall(highlighted_tokens, tmp_save['explanation'].lower())
+                total +=1
+                total_matched += matched_token
+                total_token += token_num
+                micro_recall += matched_token/token_num
     
     with open(os.path.join(save_path,'results_{}.json'.format(args['label'])), 'w') as f:
         f.write(json.dumps(save, indent=2))
