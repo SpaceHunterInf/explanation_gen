@@ -22,7 +22,7 @@ class ExpDataset(Dataset):
 
         x = {}
 
-        if 't5' in self.args['model_name']:
+        if 't5' or 'bloom' in self.args['model_name']:
             x['input_text'] = prompt + 'Premise: ' + self.data[index]['premise'] + ' ' + 'Hypothesis: ' + self.data[index]['hypothesis']
             x['output_text'] = 'Explanation: ' + self.data[index]['explanation']
             x['premise'] = self.data[index]['premise']
@@ -52,6 +52,13 @@ def collate_fn(data, tokenizer):
 
     return batch_data
 
+def bloom_collate_fn(data, tokenizer):
+    batch_data = {}
+    for key in data[0]:
+        batch_data[key] = [d[key] for d in data]
+
+    output_batch = tokenizer(batch_data["output_text"], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
+    return output_batch
 
 def prepare_data(args, tokenizer):
     if args['data'] == 'eSNLI':
@@ -70,9 +77,9 @@ def prepare_data(args, tokenizer):
     with open(path_test, 'r', encoding='utf-8') as f:
         test = json.load(f)
 
-    train_dataset = ExpDataset(args, train, tokenizer)
-    dev_dataset = ExpDataset(args, dev, tokenizer)
-    test_dataset = ExpDataset(args, test, tokenizer)
+    train_dataset = ExpDataset(args, train[:1], tokenizer)
+    dev_dataset = ExpDataset(args, dev[:1], tokenizer)
+    test_dataset = ExpDataset(args, test[:1], tokenizer)
 
     # if "gpt" in args['model_name']:
     #     train_loader = DataLoader(train_dataset, batch_size=args["train_batch_size"], shuffle=True, collate_fn=partial(gpt_collate_fn, tokenizer=tokenizer), num_workers=16)
@@ -82,6 +89,9 @@ def prepare_data(args, tokenizer):
         train_loader = DataLoader(train_dataset, batch_size=args["train_batch_size"], shuffle=True, collate_fn=partial(collate_fn, tokenizer=tokenizer), num_workers=16)
         test_loader = DataLoader(test_dataset, batch_size=args["test_batch_size"], shuffle=False, collate_fn=partial(collate_fn, tokenizer=tokenizer), num_workers=16)
         dev_loader = DataLoader(dev_dataset, batch_size=args["dev_batch_size"], shuffle=False, collate_fn=partial(collate_fn, tokenizer=tokenizer), num_workers=16)
-
+    elif 'bloom' in args['model_name']:
+        train_loader = DataLoader(train_dataset, batch_size=args["train_batch_size"], shuffle=True, collate_fn=partial(bloom_collate_fn, tokenizer=tokenizer), num_workers=16)
+        test_loader = DataLoader(test_dataset, batch_size=args["test_batch_size"], shuffle=False, collate_fn=partial(bloom_collate_fn, tokenizer=tokenizer), num_workers=16)
+        dev_loader = DataLoader(dev_dataset, batch_size=args["dev_batch_size"], shuffle=False, collate_fn=partial(bloom_collate_fn, tokenizer=tokenizer), num_workers=16)
 
     return train_loader, dev_loader, test_loader

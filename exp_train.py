@@ -33,6 +33,8 @@ class exp_task(pl.LightningModule):
             loss = self.model(input_ids=batch["input_ids"],
                             attention_mask=batch["attention_mask"],
                             labels=batch["label_ids"]).loss
+        elif 'bloom' in self.args['model_name']:
+            loss = self.model(**batch, labels=batch['input_ids']).loss
         self.log('train_loss', loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
         # return result
@@ -53,6 +55,8 @@ class exp_task(pl.LightningModule):
             loss = self.model(input_ids=batch["input_ids"],
                             attention_mask=batch["attention_mask"],
                             labels=batch["label_ids"]).loss
+        elif 'bloom' in self.args['model_name']:
+            loss = self.model(**batch, labels=batch['input_ids']).loss
         #print(loss)
         self.log('val_loss', loss)
         return {'val_loss': loss, 'log': {'val_loss': loss}}
@@ -80,6 +84,10 @@ def train(args, *more):
     if "t5" in args["model_name"]:
         model = T5ForConditionalGeneration.from_pretrained(args["model_checkpoint"])
         tokenizer = T5Tokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
+        model.resize_token_embeddings(new_num_tokens=len(tokenizer))
+    elif 'bloom' in args["model_name"]:
+        model = BloomForCausalLM.from_pretrained(args["model_checkpoint"])
+        tokenizer = AutoTokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
         model.resize_token_embeddings(new_num_tokens=len(tokenizer))
     # elif "bert" in args["model_name"] and not "roberta" in args["model_name"]:
     #     model = BertForSequenceClassification.from_pretrained(args["model_checkpoint"], num_labels=3)
@@ -139,7 +147,7 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
     model.to('cuda')
     for batch in tqdm(test_loader):
         with torch.no_grad():
-            if 't5' in args['model_name']:
+            if 't5' or 'bloom' in args['model_name']:
                 #print(batch)
                 model.cuda()
                 outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),

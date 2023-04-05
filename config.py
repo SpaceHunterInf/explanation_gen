@@ -2,7 +2,7 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_checkpoint", type=str, default="save/t5-smallt5-small0.0001_epoch_5_seed_557_contradiction", help="Path, url or short name of the model")
+    parser.add_argument("--model_checkpoint", type=str, default="bigscience/bloom-560m", help="Path, url or short name of the model")
     parser.add_argument("--saving_dir", type=str, default="save", help="Path for saving")
     parser.add_argument("--train_batch_size", type=int, default=16, help="Batch size for training")
     parser.add_argument("--meta_batch_size", type=int, default=1, help="Batch size for meta training")
@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument("--length", type=int, default=50, help="Batch size for validation")
     parser.add_argument("--max_history", type=int, default=2, help="max number of turns in the dialogue")
     parser.add_argument("--GPU", type=int, default=8, help="number of gpu to use")
-    parser.add_argument("--model_name", type=str, default="t5", help="use t5 or bert or gpt?")
+    parser.add_argument("--model_name", type=str, default="bloom", help="use t5 or bert or gpt?")
     parser.add_argument("--data", type=str, default="eSNLI")
     parser.add_argument("--max_len", type=int, default=512)
     parser.add_argument("--mode", type=str, default="train")
