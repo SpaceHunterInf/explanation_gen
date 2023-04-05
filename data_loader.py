@@ -27,6 +27,7 @@ class ExpDataset(Dataset):
             x['output_text'] = 'Explanation: ' + self.data[index]['explanation']
             x['premise'] = self.data[index]['premise']
             x['hypothesis'] = self.data[index]['hypothesis']
+            x['whole_sequence'] = x['input_text'] + ' ' + x['output_text']
             if self.args['auto_eval'] == True:
                 x['highlighted_premise'] = self.data[index]['highlighted_premise']
                 x['highlighted_hypothesis'] = self.data[index]['highlighted_hypothesis']
@@ -57,8 +58,11 @@ def bloom_collate_fn(data, tokenizer):
     for key in data[0]:
         batch_data[key] = [d[key] for d in data]
 
-    output_batch = tokenizer(batch_data["output_text"], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
-    return output_batch
+    sequence_batch = tokenizer(batch_data['whole_sequence'], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
+    batch_data['sequence_ids'] = sequence_batch['input_ids']
+    input_batch = tokenizer(batch_data['input_text'], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
+    batch_data['input_ids'] = input_batch['input_ids']
+    return batch_data
 
 def prepare_data(args, tokenizer):
     if args['data'] == 'eSNLI':
@@ -77,9 +81,9 @@ def prepare_data(args, tokenizer):
     with open(path_test, 'r', encoding='utf-8') as f:
         test = json.load(f)
 
-    train_dataset = ExpDataset(args, train[:1], tokenizer)
-    dev_dataset = ExpDataset(args, dev[:1], tokenizer)
-    test_dataset = ExpDataset(args, test[:1], tokenizer)
+    train_dataset = ExpDataset(args, train, tokenizer)
+    dev_dataset = ExpDataset(args, dev, tokenizer)
+    test_dataset = ExpDataset(args, test, tokenizer)
 
     # if "gpt" in args['model_name']:
     #     train_loader = DataLoader(train_dataset, batch_size=args["train_batch_size"], shuffle=True, collate_fn=partial(gpt_collate_fn, tokenizer=tokenizer), num_workers=16)

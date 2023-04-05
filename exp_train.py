@@ -34,7 +34,8 @@ class exp_task(pl.LightningModule):
                             attention_mask=batch["attention_mask"],
                             labels=batch["label_ids"]).loss
         elif 'bloom' in self.args['model_name']:
-            loss = self.model(**batch, labels=batch['input_ids']).loss
+            loss = self.model(input_ids=batch["sequence_ids"],
+                            labels=batch['sequence_ids']).loss
         self.log('train_loss', loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
         # return result
@@ -56,7 +57,8 @@ class exp_task(pl.LightningModule):
                             attention_mask=batch["attention_mask"],
                             labels=batch["label_ids"]).loss
         elif 'bloom' in self.args['model_name']:
-            loss = self.model(**batch, labels=batch['input_ids']).loss
+            loss = self.model(input_ids=batch["sequence_ids"],
+                            labels=batch["sequence_ids"]).loss
         #print(loss)
         self.log('val_loss', loss)
         return {'val_loss': loss, 'log': {'val_loss': loss}}
@@ -123,10 +125,10 @@ def train(args, *more):
                     accelerator="cuda"
                     )
 
-    trainer.fit(task, train_loader, val_loader)
+    #trainer.fit(task, train_loader, val_loader)
 
-    task.model.save_pretrained(save_path)
-    task.tokenizer.save_pretrained(save_path)
+    #task.model.save_pretrained(save_path)
+    #task.tokenizer.save_pretrained(save_path)
 
     print("test start...")
     #evaluate model
@@ -156,12 +158,14 @@ def evaluate_model(args, tokenizer, model, test_loader, save_path):
                                 max_length=128
                                 )
             elif 'bloom' in args['model_name']:
-                outputs = model.generate(**batch.to(device='cuda'),
+                outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
                                 eos_token_id=tokenizer.eos_token_id,
                                 max_length=128
                                 )
             
             outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            # print(outputs_text)
+            # print(batch)
 
             for idx in range(len(outputs_text)):
                 tmp_save = {'premise': batch['premise'][idx], 'hypothesis': batch['hypothesis'][idx], 'gold_explanation':batch['output_text'][idx]}
