@@ -78,7 +78,7 @@ class exp_task(pl.LightningModule):
 
 def train(args, *more):
     args = vars(args)
-    args["model_name"] = 'ibm'+args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
+    args["model_name"] = args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
     # train!
     seed_everything(args["seed"])
 
@@ -125,10 +125,10 @@ def train(args, *more):
                     accelerator="cuda"
                     )
 
-    #trainer.fit(task, train_loader, val_loader)
+    trainer.fit(task, train_loader, val_loader)
 
-    #task.model.save_pretrained(save_path)
-    #task.tokenizer.save_pretrained(save_path)
+    task.model.save_pretrained(save_path)
+    task.tokenizer.save_pretrained(save_path)
 
     print("test start...")
     #evaluate model
