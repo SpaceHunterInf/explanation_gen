@@ -56,8 +56,8 @@ if __name__ == '__main__':
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
         elif "bloom" in args["model_name"]:
-            model = BloomForCausalLM.from_pretrained(args["model_checkpoint"])
-            tokenizer = AutoTokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
+            model = BloomForCausalLM.from_pretrained(model_path)
+            tokenizer = AutoTokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
 
         dataset = prepare_data(args, 'data/chaosNLI/chaosNLI_snli.json', tokenizer, l)
