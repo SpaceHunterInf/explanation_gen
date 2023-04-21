@@ -50,7 +50,7 @@ if __name__ == '__main__':
     labels = ['entailment', 'contradiction', 'neutral']
 
     for l in labels:
-        model_path = 'flan-t5/ibm_{}'.format(l)
+        model_path = 'save/bloom-eSNLI/bloom0.0001_epoch_10_seed_557_{}'.format(l)
         if "t5" in args["model_name"]:
             model = T5ForConditionalGeneration.from_pretrained(model_path)
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
