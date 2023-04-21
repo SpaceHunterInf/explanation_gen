@@ -23,7 +23,7 @@ class MultiExplainDataset(Dataset):
             prompt = 'Explain why the premise is neutral with respect to the hypothesis. '
         x = deepcopy(self.data[index])
 
-        if 't5' in self.args['model_name']:
+        if 't5' or 'bloom' in self.args['model_name']:
             if self.source == 'ChaoSNLI':
                 x['input_text'] = prompt + 'Premise: ' + self.data[index]['example']['premise'] + ' ' + 'Hypothesis: ' + self.data[index]['example']['hypothesis']
             elif self.source == 'IBM':
@@ -49,7 +49,7 @@ def prepare_data(args, file_name, tokenizer, l, source='ChaoSNLI'):
         data = json.load(f)
 
     dataset = MultiExplainDataset(args, data, tokenizer, l, source)
-    if 't5' in args['model_name']:
+    if 't5' or 'bloom' in args['model_name']:
         dataset = DataLoader(dataset, batch_size=args["dev_batch_size"], shuffle=False, collate_fn=partial(collate_fn, tokenizer=tokenizer), num_workers=16)
     
     return dataset
