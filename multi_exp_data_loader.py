@@ -7,11 +7,12 @@ from copy import deepcopy
 from functools import partial
 
 class MultiExplainDataset(Dataset):
-    def __init__(self,args, data, tokenizer, l):
+    def __init__(self,args, data, tokenizer, l, source='ChaoSNLI'):
         self.data = data
         self.tokenizer = tokenizer
         self.args = args
         self.label = l
+        self.source = source
     
     def __getitem__(self, index):
         if self.label == 'entailment':
@@ -23,8 +24,10 @@ class MultiExplainDataset(Dataset):
         x = deepcopy(self.data[index])
 
         if 't5' in self.args['model_name']:
-            x['input_text'] = prompt + 'Premise: ' + self.data[index]['example']['premise'] + ' ' + 'Hypothesis: ' + self.data[index]['example']['hypothesis']
-            
+            if self.source == 'ChaoSNLI':
+                x['input_text'] = prompt + 'Premise: ' + self.data[index]['example']['premise'] + ' ' + 'Hypothesis: ' + self.data[index]['example']['hypothesis']
+            elif self.source == 'IBM':
+                x['input_text'] = prompt + 'Premise: ' + self.data[index]['premise'] + ' ' + 'Hypothesis: ' + self.data[index]['hypothesis']
         return x
 
     def __len__(self):
@@ -41,11 +44,11 @@ def collate_fn(data, tokenizer):
 
     return batch_data
 
-def prepare_data(args, file_name, tokenizer, l):
+def prepare_data(args, file_name, tokenizer, l, source='ChaoSNLI'):
     with open(file_name, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    dataset = MultiExplainDataset(args, data, tokenizer, l)
+    dataset = MultiExplainDataset(args, data, tokenizer, l, source)
     if 't5' in args['model_name']:
         dataset = DataLoader(dataset, batch_size=args["dev_batch_size"], shuffle=False, collate_fn=partial(collate_fn, tokenizer=tokenizer), num_workers=16)
     

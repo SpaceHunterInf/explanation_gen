@@ -28,9 +28,17 @@ def generate_output(args, tokenizer, model, test_loader, save_path, label):
                                 max_length=128,
                                 )
                 outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            elif 'bloom' in args['model_name']:
+                model.cuda()
+                outputs = model.generate(input_ids=batch["input_ids"].to(device='cuda'),
+                                eos_token_id=tokenizer.eos_token_id,
+                                max_length=128
+                                )
+            
+                outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
 
-                for idx in range(len(outputs_text)):
-                    save.append(outputs_text[idx])
+            for idx in range(len(outputs_text)):
+                save.append(outputs_text[idx])
     
     with open(os.path.join(save_path,'results_{}.json'.format(label)), 'w') as f:
         f.write(json.dumps(save, indent=2))
@@ -42,14 +50,18 @@ if __name__ == '__main__':
     labels = ['entailment', 'contradiction', 'neutral']
 
     for l in labels:
-        model_path = 'flan-t5/{}'.format(l)
+        model_path = 'flan-t5/ibm_{}'.format(l)
         if "t5" in args["model_name"]:
             model = T5ForConditionalGeneration.from_pretrained(model_path)
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
+        elif "bloom" in args["model_name"]:
+            model = BloomForCausalLM.from_pretrained(args["model_checkpoint"])
+            tokenizer = AutoTokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
+            model.resize_token_embeddings(new_num_tokens=len(tokenizer))
 
         dataset = prepare_data(args, 'data/chaosNLI/chaosNLI_snli.json', tokenizer, l)
-        save_path = 'flan-t5/'
+        save_path = 'bloom_eSNLI_results/'
         print("test start...")
         #evaluate model
         generate_output(args, tokenizer, model, dataset, save_path, l)
