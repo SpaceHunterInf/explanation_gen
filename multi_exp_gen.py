@@ -47,7 +47,7 @@ def generate_output(args, tokenizer, model, test_loader, save_path, label):
 if __name__ == '__main__':
     args = get_args()
     args = vars(args)
-    labels = ['entailment', 'neutral']
+    labels = ['entailment', 'contradiction']
 
     for l in labels:
         model_path = 'save/bloom0.0001_epoch_10_seed_557_{}'.format(l)
