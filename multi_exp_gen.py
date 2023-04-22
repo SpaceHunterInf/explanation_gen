@@ -60,7 +60,7 @@ if __name__ == '__main__':
             tokenizer = AutoTokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
 
-        dataset = prepare_data(args, 'data/IBMDebate/filtered/ibm_test_prompts.json', tokenizer, l)
+        dataset = prepare_data(args, 'data/IBMDebate/filtered/ibm_test_prompts.json', tokenizer, l, source='IBM')
         save_path = 'bloom_ibm_results/'
         print("test start...")
         #evaluate model
