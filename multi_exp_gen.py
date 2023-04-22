@@ -47,10 +47,10 @@ def generate_output(args, tokenizer, model, test_loader, save_path, label):
 if __name__ == '__main__':
     args = get_args()
     args = vars(args)
-    labels = ['entailment', 'contradiction', 'neutral']
+    labels = ['entailment', 'neutral']
 
     for l in labels:
-        model_path = 'save/bloom-eSNLI/bloom0.0001_epoch_10_seed_557_{}'.format(l)
+        model_path = 'save/bloom0.0001_epoch_10_seed_557_{}'.format(l)
         if "t5" in args["model_name"]:
             model = T5ForConditionalGeneration.from_pretrained(model_path)
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
@@ -60,8 +60,8 @@ if __name__ == '__main__':
             tokenizer = AutoTokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
 
-        dataset = prepare_data(args, 'data/chaosNLI/chaosNLI_snli.json', tokenizer, l)
-        save_path = 'bloom_eSNLI_results/'
+        dataset = prepare_data(args, 'data/IBMDebate/filtered/ibm_test_prompts.json', tokenizer, l)
+        save_path = 'bloom_ibm_results/'
         print("test start...")
         #evaluate model
         generate_output(args, tokenizer, model, dataset, save_path, l)
