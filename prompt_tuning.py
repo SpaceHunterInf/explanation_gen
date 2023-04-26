@@ -90,7 +90,6 @@ class prompt_exp_task(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         model = self.model
-        model.eval()
         model.learned_embedding.requires_grad_(True)
 
         if 'bert' in self.args['model_name'] and not 'roberta' in self.args['model_name']:
@@ -145,7 +144,7 @@ class prompt_exp_task(pl.LightningModule):
         return results
 
     def configure_optimizers(self):
-        return AdamW(self.parameters(), lr=self.lr, correct_bias=True)
+        return AdamW(filter(lambda p: p.requires_grad, self.parameters()), lr=self.lr, correct_bias=True)
 
 def train(args, *more):
     args = vars(args)
@@ -155,9 +154,9 @@ def train(args, *more):
 
 
     if "t5" in args["model_name"]:
-        model = T5ForConditionalGeneration.from_pretrained(args["model_checkpoint"])
+        language_model = T5ForConditionalGeneration.from_pretrained(args["model_checkpoint"])
         tokenizer = T5Tokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
-        model.resize_token_embeddings(new_num_tokens=len(tokenizer))
+        language_model.resize_token_embeddings(new_num_tokens=len(tokenizer))
     elif 'bloom' in args["model_name"]:
         model = BloomForCausalLM.from_pretrained(args["model_checkpoint"])
         tokenizer = AutoTokenizer.from_pretrained(args["model_checkpoint"], bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
@@ -173,8 +172,10 @@ def train(args, *more):
     #     model.config.id2label = {'0':'entailment', '1':'neutral', '2':'contradiction'}
     #     model.config.label2id = {'entailment':0, 'neutral':1, 'contradiction':2}
         
-
-    task = prompt_exp_task(args, tokenizer, model)
+    for param in language_model.parameters():
+            param.requires_grad = False
+    task = prompt_exp_task(args, tokenizer, language_model)
+    
 
     train_loader, val_loader, test_loader = prepare_data(args, task.tokenizer)
 
