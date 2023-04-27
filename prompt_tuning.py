@@ -148,7 +148,7 @@ class prompt_exp_task(pl.LightningModule):
 
 def train(args, *more):
     args = vars(args)
-    args["model_name"] = args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
+    args["model_name"] = args['data'] + args["model_name"] + str(args["lr"]) + "_epoch_" + str(args["n_epochs"]) + "_seed_" + str(args["seed"]) + '_' + args['label']
     # train!
     seed_everything(args["seed"])
 
