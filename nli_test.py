@@ -45,19 +45,9 @@ if __name__ == '__main__':
             else:
                 improper_data.append(d)
 
-    with open('flan-t5/processed.json', 'r') as f:
-        flant5 = json.load(f)
-
-    with open('flan-t5-prompted/processed.json', 'r') as f:
-        flant5prompted = json.load(f)
-
-    with open('bloom/processed.json', 'r') as f:
-        bloom = json.load(f)
-
-    with open('gpt-3.5/processed.json', 'r') as f:
-        gpt = json.load(f)
-
-    processed_data += flant5 + flant5prompted + bloom + gpt
+    for file in os.listdir('processed_data/'):
+        with open('processed_data/' + file, 'r') as f:
+            processed_data += json.load(f)
 
     shifted = 0
     changed = 0
@@ -76,7 +66,9 @@ if __name__ == '__main__':
                 improper_data.append(d)
 
     labels = ['entailment', 'neutral', 'contradiction']
+    j = 0
     for i in tqdm(proper_data, desc='proper_data'):
+        j += 1
         if not 'ibm' in i['uid']:
             probs = get_probs(model, tokenizer, i['premise'], i['hypothesis'])
             prev_probs.append(torch.log(probs))
@@ -98,9 +90,9 @@ if __name__ == '__main__':
 
                 if e_probs.tolist()[label_idx] > probs.tolist()[label_idx]:
                     shifted += 1
-            if proper_data.index(i) == 177:
-                break
+        # if j == 170:
+        #     break
 
     with open(hg_model_hub_name.split('/')[-1]+'human_eval.txt','w') as f:
-        f.write(str(changed/counter), str(shifted/counter), str(counter))
+        f.write(str(changed/counter) + ' ' + str(shifted/counter) + ' ' +  str(counter))
         f.close()
