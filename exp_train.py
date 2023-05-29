@@ -12,7 +12,7 @@ import random, os, json, re
 
 class exp_task(pl.LightningModule):
     
-    def __init__(self,args, tokenizer, model):
+    def __init__(self, args, tokenizer, model):
         super().__init__()
         self.tokenizer = tokenizer
         self.model = model
@@ -35,7 +35,7 @@ class exp_task(pl.LightningModule):
                             labels=batch["label_ids"]).loss
         elif 'bloom' in self.args['model_name']:
             loss = self.model(input_ids=batch["sequence_ids"],
-                            labels=batch['sequence_ids']).loss
+                            labels=batch["sequence_ids"]).loss
         self.log('train_loss', loss)
         return {'loss': loss, 'log': {'train_loss': loss}}
         # return result
@@ -57,7 +57,7 @@ class exp_task(pl.LightningModule):
                             attention_mask=batch["attention_mask"],
                             labels=batch["label_ids"]).loss
         elif 'bloom' in self.args['model_name']:
-            loss = self.model(input_ids=batch["sequence_ids"],
+            loss = self.model(input_ids=batch["input_ids"],
                             labels=batch["sequence_ids"]).loss
         #print(loss)
         self.log('val_loss', loss)

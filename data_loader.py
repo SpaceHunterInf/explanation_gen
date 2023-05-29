@@ -61,7 +61,11 @@ def bloom_collate_fn(data, tokenizer):
     sequence_batch = tokenizer(batch_data['whole_sequence'], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
     batch_data['sequence_ids'] = sequence_batch['input_ids']
     input_batch = tokenizer(batch_data['input_text'], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False, truncation=True, max_length=1000)
+    output_batch = tokenizer(batch_data["output_text"], padding=True, return_tensors="pt", add_special_tokens=False, return_attention_mask=False)
+    # replace the padding id to -100 for cross-entropy
+    output_batch['input_ids'].masked_fill_(output_batch['input_ids']==tokenizer.pad_token_id, -100)
     batch_data['input_ids'] = input_batch['input_ids']
+    batch_data["label_ids"] = output_batch['input_ids']
     return batch_data
 
 def prepare_data(args, tokenizer):

@@ -2,8 +2,8 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_checkpoint", type=str, default="bigscience/bloom-560m", help="Path, url or short name of the model")
-    parser.add_argument("--saving_dir", type=str, default="save", help="Path for saving")
+    parser.add_argument("--model_checkpoint", type=str, default="flan-t5/contradiction", help="Path, url or short name of the model")
+    parser.add_argument("--saving_dir", type=str, default="promtped_flan-t5", help="Path for saving")
     parser.add_argument("--train_batch_size", type=int, default=16, help="Batch size for training")
     parser.add_argument("--meta_batch_size", type=int, default=1, help="Batch size for meta training")
     parser.add_argument("--dev_batch_size", type=int, default=8, help="Batch size for validation")

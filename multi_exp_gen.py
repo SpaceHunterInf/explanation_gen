@@ -8,6 +8,7 @@ import json
 from tqdm import tqdm
 from config import *
 from multi_exp_data_loader import *
+from prompt_tuning import Soft_Prompt_T5
 import random, os, json, re
 
 def generate_output(args, tokenizer, model, test_loader, save_path, label):
@@ -27,6 +28,13 @@ def generate_output(args, tokenizer, model, test_loader, save_path, label):
                                 eos_token_id=tokenizer.eos_token_id,
                                 max_length=128,
                                 )
+                outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            elif 'soft-prompt' in args['model_name']:
+                model.cuda()
+                outputs = outputs = model.generate(batch["input_ids"].to(device='cuda'),
+                                                   batch["attention_mask"].to(device='cuda'), 
+                                                   tokenizer.eos_token_id, 
+                                                   128)
                 outputs_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)
             elif 'bloom' in args['model_name']:
                 model.cuda()
@@ -50,7 +58,7 @@ if __name__ == '__main__':
     labels = ['entailment', 'contradiction']
 
     for l in labels:
-        model_path = 'save/bloom0.0001_epoch_10_seed_557_{}'.format(l)
+        model_path = 'flan-t5/ibm_{}'.format(l)
         if "t5" in args["model_name"]:
             model = T5ForConditionalGeneration.from_pretrained(model_path)
             tokenizer = T5Tokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
@@ -59,9 +67,15 @@ if __name__ == '__main__':
             model = BloomForCausalLM.from_pretrained(model_path)
             tokenizer = AutoTokenizer.from_pretrained(model_path, bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
             model.resize_token_embeddings(new_num_tokens=len(tokenizer))
+        elif "soft-prompt" in args["model_name"]:
+            t5 = T5ForConditionalGeneration.from_pretrained('google/flan-t5-base'.format(l))
+            tokenizer = T5Tokenizer.from_pretrained('google/flan-t5-base', bos_token="[bos]", eos_token="[eos]", sep_token="[sep]")
+            t5.resize_token_embeddings(new_num_tokens=len(tokenizer))
+            model = Soft_Prompt_T5(t5, tokenizer)
+            model.load_state_dict(torch.load('flan-t5-prompted/IBMflan-t50.0001_epoch_10_seed_557_{}/model.pt'.format(l)))
 
         dataset = prepare_data(args, 'data/IBMDebate/filtered/ibm_test_prompts.json', tokenizer, l, source='IBM')
-        save_path = 'bloom_ibm_results/'
+        save_path = 'flan-t5-prompted/ibm-results/'
         print("test start...")
         #evaluate model
         generate_output(args, tokenizer, model, dataset, save_path, l)

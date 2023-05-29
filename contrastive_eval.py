@@ -169,7 +169,7 @@ if __name__ == '__main__':
     label2index = {'entailment':0, 'neutral':1, 'contradiction':2}
     fact = 'neutral'
     contrastive_highlighted = []
-    with open('save/t5-smallt5-small0.0001_epoch_5_seed_557_{}/results/results_{}.json'.format(fact, fact), 'r', encoding='utf-8') as f:
+    with open('flan-t5/eSNLIflan-t50.0001_epoch_10_seed_557_{}/results/results_{}.json'.format(fact, fact), 'r', encoding='utf-8') as f:
         predicted_data = json.load(f)
 
     for predicted in tqdm(predicted_data, desc='data processing'):

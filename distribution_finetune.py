@@ -149,12 +149,17 @@ if __name__ == '__main__':
         train(args)
     if args.mode=='test':
         args = vars(args)
-        hg_model_hub_name = "ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli"
-        tokenizer = RobertaTokenizer.from_pretrained(hg_model_hub_name, max_length=514)
-        model = RobertaForSequenceClassification.from_pretrained(hg_model_hub_name)
+        # hg_model_hub_name = "ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli"
+        # hg_model_hub_name = "ynie/albert-xxlarge-v2-snli_mnli_fever_anli_R1_R2_R3-nli"
+        # hg_model_hub_name = "ynie/bart-large-snli_mnli_fever_anli_R1_R2_R3-nli"
+        # hg_model_hub_name = "ynie/electra-large-discriminator-snli_mnli_fever_anli_R1_R2_R3-nli"
+        hg_model_hub_name = "ynie/xlnet-large-cased-snli_mnli_fever_anli_R1_R2_R3-nli"
+
+        tokenizer = AutoTokenizer.from_pretrained(hg_model_hub_name)
+        model = AutoModelForSequenceClassification.from_pretrained(hg_model_hub_name)
         model.cuda()
         task = nli_task(args, tokenizer, model)
 
         train_loader, val_loader, test_loader = prepare_data(args, task.tokenizer)
         save_path = 'roberta-raw'
-        evaluate_model(args, task.tokenizer, task.model, test_loader, save_path)
+        evaluate_model(args, task.tokenizer, task.model, val_loader, save_path)

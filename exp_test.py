@@ -24,8 +24,8 @@ if __name__ == '__main__':
     total_token = 0
     micro_recall = 0
     for l in labels:
-        gold = 'contrastive_augmented_snli_{}.json'.format(l)
-        test_folder = 'save/t5-smallt5-small0.0001_epoch_5_seed_557_{}/results/'.format(l)
+        gold = 'data/eSNLI/test_e-snli-{}.json'.format(l)
+        test_folder = 'flan-t5-prompted/eSNLIflan-t50.0001_epoch_10_seed_557_{}/results/'.format(l)
         test_file = 'results_{}.json'.format(l)
 
         with open(gold, 'r', encoding='utf-8') as f:
@@ -39,14 +39,14 @@ if __name__ == '__main__':
         print(len(test_data))
 
         for i in range(len(gold_data)):
-            tokens = find_highlighted(gold_data[i]['contrastive_highlight'])#(gold_data[i]['highlighted_premise'] + gold_data[i]['highlighted_hypothesis'])
+            tokens = (gold_data[i]['highlighted_premise'] + gold_data[i]['highlighted_hypothesis'])#find_highlighted(gold_data[i]['contrastive_highlight'])
             a, b = get_recall(tokens, test_data[i]['explanation'].lower())
             total +=1
             total_matched += a
             total_token += b
             micro_recall += a/b
 
-        with open(os.path.join(test_folder,'auto_eval_results__augmented_{}.txt'.format(l)), 'w') as f:
+        with open(os.path.join(test_folder,'auto_eval_results_{}.txt'.format(l)), 'w') as f:
             f.write('Total matched:{}, total token:{} in {} instances. \n'.format(str(total_matched), str(total_token), str(total)))
             f.write('Macro Recall:{}, Micro Recall:{}. \n'.format(str(total_matched/total_token), str(micro_recall/total)))
             f.close()
